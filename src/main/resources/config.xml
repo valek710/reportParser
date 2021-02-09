@@ -1,0 +1,8 @@
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <!-- Data for jenkins -->
+    <entry key="jenkinsUrl">localhost:8080</entry>
+    <entry key="jenkinsBasicAuth">abcd1234</entry>
+    <entry key="jPackageNames">12, 13, 14</entry>
+    <entry key="jPaths">job/testPackage/job/ApiTests, job/testPackage/job/IntegrationTests, job/testPackage/job/UITests</entry>
+</properties>
