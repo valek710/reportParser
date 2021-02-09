@@ -16,11 +16,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * For these tests to work, you must place the "res" folder with the "testFile.zip" test file in the project root.
+ * For these tests to work, you must add the "testFile.zip" test file in src/test/resources/.
  */
 public class FileHelperTest {
-    private final String pathToPackage = FileHelperTest.class.getProtectionDomain().getCodeSource().getLocation().getPath().replace("target/test-classes/", "");
-    private final Path path = Paths.get(pathToPackage + "newPath/");
+   private final Path path = Paths.get("newPath/");
 
     @Test
     public void createDirsForOnePath() throws IOException {
@@ -36,7 +35,7 @@ public class FileHelperTest {
 
     @Test
     public void createDirsForTwoPath() throws IOException {
-        var path1 = Paths.get(pathToPackage + "newPath1/secondLvl/");
+        var path1 = Paths.get("newPath1/secondLvl/");
         try {
             FileHelper.createDirs(path, path1);
 
@@ -66,9 +65,9 @@ public class FileHelperTest {
      */
     @Test
     public void writeFileFromStream() throws IOException {
-        var path1 = pathToPackage + "testFile.zip";
+        var path1 = "testFile.zip";
         try(var out = new FileOutputStream(path1)) {
-            var in = Paths.get(pathToPackage + "res/testFile.zip");
+            var in = Paths.get("src/test/resources/testFile.zip");
             FileHelper.copy(Files.newInputStream(in), out);
             Assertions.assertTrue(Files.exists(Paths.get(path1)));
             Assertions.assertEquals(1136135, new File(path1).length());
@@ -80,12 +79,14 @@ public class FileHelperTest {
 
     @Test
     public void unzipFile() throws IOException {
-        var path1 = Paths.get(pathToPackage + "res/testFile.zip");
+        List<Path> resources = Files.list(Paths.get("src/test/resources")).collect(Collectors.toList());
+        var path1 = Paths.get("src/test/resources/testFile.zip");
+
         try {
             FileHelper.unzipFile(path1);
 
-            List<Path> list = Files.list(Paths.get(pathToPackage + "res")).collect(Collectors.toList());
-            list.remove(path1);
+            List<Path> list = Files.list(Paths.get("src/test/resources")).collect(Collectors.toList());
+            list.removeAll(resources);
             List<File> list1 = Arrays.stream(Objects.requireNonNull(list.get(0).toFile().listFiles())).collect(Collectors.toList());
             long size = Files.walk(list.get(0)).mapToLong(p -> p.toFile().length()).sum();
 
@@ -93,13 +94,13 @@ public class FileHelperTest {
             Assertions.assertTrue(list1.size() > 0);
             Assertions.assertTrue(size > path1.toFile().length());
         } finally {
-            List<Path> list = Files.list(Paths.get(pathToPackage + "res")).collect(Collectors.toList());
-            list.remove(path1);
+            List<Path> list = Files.list(Paths.get("src/test/resources")).collect(Collectors.toList());
+            list.removeAll(resources);
 
             list.forEach(p -> {
                 try {
                     FileUtils.forceDeleteOnExit(p.toFile());
-                } catch (IOException ignored) { }
+                } catch (IOException ignored) {}
             });
         }
     }
