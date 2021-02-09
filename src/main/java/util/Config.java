@@ -22,6 +22,12 @@ public abstract class Config {
     private static final Properties props = new Properties();
 
     @Getter
+    private static int reportCount = 1;
+
+    @Getter
+    private static String storagePath;
+
+    @Getter
     private static String jenkinsUrl;
 
     @Getter
@@ -39,6 +45,9 @@ public abstract class Config {
     static {
         try {
             props.loadFromXML(Config.class.getResourceAsStream(PATH_TO_CONFIG_FILE));
+            reportCount = Integer.parseInt(getProperty("reportCount"));
+            storagePath = getProperty("storage");
+
             if (props.containsKey("jenkinsUrl")) {
                 hasJenkins = true;
                 jenkinsUrl = getProperty("jenkinsUrl");
