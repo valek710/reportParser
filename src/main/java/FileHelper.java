@@ -1,13 +1,13 @@
 import lombok.NonNull;
 import lombok.val;
 import lombok.var;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.zip.ZipInputStream;
 
 public class FileHelper {
     
@@ -19,11 +19,16 @@ public class FileHelper {
             return;
         }
 
-        try(val zis = new ZipInputStream(Files.newInputStream(pathToZip))) {
+        try(val zis = new ZipArchiveInputStream(Files.newInputStream(pathToZip))) {
             var zipEntry = zis.getNextEntry();
 
+
             while (zipEntry != null) {
-                try(val os = Files.newOutputStream(pathToZip.getParent())) {
+                Path fileFullName = pathToZip.getParent().resolve(zipEntry.getName());
+
+                createDirs(fileFullName.getParent());
+
+                try(val os = Files.newOutputStream(fileFullName)) {
                     copy(zis, os);
                 }
                 zipEntry = zis.getNextEntry();
@@ -43,7 +48,7 @@ public class FileHelper {
         }
     }
 
-    public static void copy(InputStream in, OutputStream os) throws IOException {
+    public static void copy(@NonNull InputStream in, @NonNull OutputStream os) throws IOException {
         byte[] buf = new byte[1024 * 8];
         int length;
         while ((length = in.read(buf)) > 0) {
