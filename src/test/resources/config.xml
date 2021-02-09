@@ -1,0 +1,13 @@
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <!-- Max count reports for every job from jPaths. If in package count reports > report count -
+    oldest reports (with min run id) will be deleted -->
+    <entry key="reportCount">5</entry>
+    <!-- Path to package which be used for saving reports -->
+    <entry key="storage">home/allure/</entry>
+    <!-- Data for jenkins -->
+    <entry key="jenkinsUrl">localhost:8080</entry>
+    <entry key="jenkinsBasicAuth">abcd1234</entry>
+    <entry key="jPackageNames">api, integration, ui</entry>
+    <entry key="jPaths">job/testPackage/job/ApiTests, job/testPackage/job/IntegrationTests, job/testPackage/job/UITests</entry>
+</properties>
