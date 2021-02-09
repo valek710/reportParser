@@ -2,6 +2,7 @@ import lombok.var;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import util.FileHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
