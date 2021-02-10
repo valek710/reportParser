@@ -1,19 +1,20 @@
 package util;
 
+import dto.JobDTO;
 import lombok.Getter;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.Set;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Class for loading configuration.
  * Example of this file in src/main/resources/config.xml
  */
-public abstract class Config {
+public class Config {
 
     private final static Logger LOGGER = Logger.getLogger(Config.class);
 
@@ -37,12 +38,22 @@ public abstract class Config {
     private static boolean hasJenkins = false;
 
     @Getter
-    private static Set<String> jenkinsPackages;
+    private static Set<JobDTO> jenkinsJobs;
 
-    @Getter
-    private static Set<String> jenkinsJobPaths;
+
 
     static {
+        loadProperties();
+    }
+
+    public static String getProperty(String name) {
+        if (!props.containsKey(name)) {
+            LOGGER.error("Config option with name - " + name + " does not exists.");
+        }
+        return props.getProperty(name);
+    }
+
+    private static void loadProperties() {
         try {
             props.loadFromXML(Config.class.getResourceAsStream(PATH_TO_CONFIG_FILE));
             reportCount = Integer.parseInt(getProperty("reportCount"));
@@ -52,20 +63,28 @@ public abstract class Config {
                 hasJenkins = true;
                 jenkinsUrl = getProperty("jenkinsUrl");
                 jenkinsBasicAuth = getProperty("jenkinsBasicAuth");
-                jenkinsPackages = Arrays.stream(getProperty("jPackageNames").split(",")).map(String::trim)
-                        .collect(Collectors.toSet());
-                jenkinsJobPaths = Arrays.stream(getProperty("jPaths").split(",")).map(String::trim)
-                        .collect(Collectors.toSet());
+
+                List<String> packages = Arrays.stream(getProperty("jPackageNames").split(",")).map(String::trim)
+                        .collect(Collectors.toList());
+                List<String> urls = Arrays.stream(getProperty("jPaths").split(",")).map(String::trim)
+                        .collect(Collectors.toList());
+
+                if (packages.size() != urls.size()) {
+                    LOGGER.error("Count elements \"jPackageNames\" and elements \"jPaths\" in you config.xml MUST be equals. But isn't.");
+                    jenkinsJobs = Collections.emptySet();
+                } else {
+                    jenkinsJobs = new HashSet<>();
+                    for (int i = 0; i < packages.size(); i++) {
+                        String url = jenkinsUrl.endsWith("/") ? jenkinsUrl : jenkinsUrl + "/";
+                        url += urls.get(i).startsWith("/") ? urls.get(i).substring(1) : urls.get(i);
+                        Path packagePath = Paths.get(storagePath).resolve(Paths.get(packages.get(i)));
+                        JobDTO job = new JobDTO(url, packagePath);
+                        jenkinsJobs.add(job);
+                    }
+                }
             }
         } catch (IOException e) {
             LOGGER.error("Exception when load configuration with path " + PATH_TO_CONFIG_FILE, e);
         }
-    }
-
-    public static String getProperty(String name) {
-        if (!props.containsKey(name)) {
-            LOGGER.error("Config option with name - " + name + " does not exists.");
-        }
-        return props.getProperty(name);
     }
 }
